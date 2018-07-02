@@ -1,3 +1,12 @@
+--[[
+.. Reascript Name: Velocity Lane monitor
+.. Description: Audio monitoring in specified intervals while adjusting velocity in the velocity lane of the MIDI editor.
+.. Author: r3as0n.X
+.. Licence: GPL v3
+.. Reaper: 5.92
+.. Version: 1.0
+--]] 
+
 -- Initialize global variables
 cur_time = reaper.time_precise()
 cur_take = nil
@@ -6,19 +15,19 @@ cur_track = nil
 cur_track_input = -1
 interval = 0.500
 
--- Note on
+-- Note on message
 local function noteon(take, note)
   local retval, sel, muted, start, ending, chan, pitch, vel = reaper.MIDI_GetNote(take, note)
   reaper.StuffMIDIMessage(0, 0x90 + chan, pitch, vel)
 end
 
--- Note off
+-- Note off message
 local function noteoff(take, note)
   local retval, sel, muted, start, ending, chan, pitch, vel = reaper.MIDI_GetNote(take, note)
   reaper.StuffMIDIMessage(0, 0x90 + chan, pitch, 0x00)
 end
 
--- Check if track is changed, set/restore input, arm for recording and monitoring
+-- Check if track has changed, set new track input to pass MIDI messages through VMK, restore previous track input where it was,  arm current track for recording and monitoring, disarm all others
 local function checktrack(take)
   track = reaper.GetMediaItemTake_Track(take)
   if track ~= cur_track then
@@ -34,7 +43,7 @@ local function checktrack(take)
   end
 end
 
--- Check if take has changed and arm track accordingly
+-- Check if take has changed, update active take
 local function checktake(take)  
   if take ~= cur_take then
     if cur_note ~= -1 and cur_take ~= nil then
@@ -45,7 +54,7 @@ local function checktake(take)
   end
 end
 
--- Check if note has changed
+-- Check if note has changed and send missed note off
 local function checknote(note)
   if note ~= cur_note then
     noteoff(cur_take, cur_note)
@@ -53,7 +62,7 @@ local function checknote(note)
   end
 end
 
--- Check time passed from last noteon message
+-- Check time elapsed from last noteon message
 local function checktime()
   local time = reaper.time_precise()
   local dt = time - cur_time
@@ -65,7 +74,7 @@ local function checktime()
   end
 end
 
--- Check if mouse is in the velocity lane
+-- Check if mouse is inside the velocity lane
 local function checklane()
   local win, seg, det = reaper.BR_GetMouseCursorContext()
   local retval, inline, ntrow, cclane, cclaneval, cclaneid = reaper.BR_GetMouseCursorContext_MIDI()
@@ -77,10 +86,11 @@ local function checklane()
 end
 
 -- UI
+
+-- Check if mouse is inside adjustment area
 local function mousearea(x, y, w, h)
   local msx = gfx.mouse_x
   local msy = gfx.mouse_y
-
   if msx > x and msx < (x + w) and msy > y and msy < (y + h) then
     return true
   else 
@@ -88,6 +98,7 @@ local function mousearea(x, y, w, h)
   end
 end
 
+-- Set all text
 function settext()
 -- Title
 gfx.setfont(1, "Arial", 18)
@@ -130,7 +141,7 @@ gfx.y = hint_y
 gfx.drawstr(hint)
 end
 
--- Adjust interval
+-- Adjust interval using mouse wheel or +/- keys
 function mousewheel()
   local f = gfx.mouse_wheel
   local char = gfx.getchar()  
@@ -147,18 +158,17 @@ function mousewheel()
   end
 end
 
-
 -- Main loop
+
 local function main()
   reaper.ClearConsole()
-
-  
-  -- Check for active takes and prepare track
+ 
+  -- Check for active takes
  local take = reaper.MIDIEditor_GetTake(reaper.MIDIEditor_GetActive())
   if take ~= nil then  -- Check if take is valid
         checktake(take)  
         local note = reaper.MIDI_EnumSelNotes(cur_take, -1)
-        if note > -1 then  -- note selected
+        if note > -1 then  -- Check if note is valid 
               checknote(note)
               if checktime() and checklane() then
                 noteoff(cur_take, cur_note)
@@ -166,11 +176,11 @@ local function main()
               elseif not checklane() then
                 noteoff(cur_take, cur_note)
               end
-        elseif note == -1 then -- no note selected
+        elseif note == -1 then -- If no note selected
               noteoff(cur_take, cur_note)
               cur_note = note
         end
-  elseif take == nil then   -- no valid take
+  elseif take == nil then   -- If there is no valid take
         if cur_take ~= nil then
           noteoff(cur_take, cur_note)
           cur_take = take
@@ -181,19 +191,7 @@ local function main()
   if mousearea(setint_x, setint_y, setint_w, setint_h) then
     mousewheel()
   end 
---[[
-    --Check conditions and play note
-    local note = reaper.MIDI_EnumSelNotes(cur_take, -1)
-    if conditions(note) == 1 then
-      noteoff(cur_take, cur_note)
-      cur_note = note
-      noteon(cur_take, cur_note)
-    elseif conditions(note) == 2 then
-      noteoff(cur_take, cur_note)
-      cur_note = note
-    end 
-  end
-  ]]
+
   -- Exit condition
   local char = gfx.getchar()
   if char ~= 27 and char ~= -1 then
@@ -207,30 +205,4 @@ end
 
 gfx.init("Velocity Monitor - V1.0 BETA", 360, 180, 0, 0, 0)
 settext()
-main()  
-
-
---[[  
-  if take ~= nil then
-    local note = reaper.MIDI_EnumSelNotes(take, -1)
-    local win, seg, det = reaper.BR_GetMouseCursorContext()
-    local retval, inline, ntrow, cclane, cclaneval, cclaneid = reaper.BR_GetMouseCursorContext_MIDI()
-    local position = reaper.BR_GetMouseCursorContext_Position()
-    reaper.ShowConsoleMsg(note .. "\n")
-    retval, sel, muted, start, ending, chan, pitch, vel = reaper.MIDI_GetNote(take, note)
-    reaper.ShowConsoleMsg(chan .. " | " .. pitch .." | ".. vel)
-    local time2 = reaper.time_precise()
-    local dt = time2 - time1
-    reaper.ShowConsoleMsg("\n"..dt.."\n")
-    --reaper.ShowConsoleMsg(gfx.mouse_cap .. "\n")
-    --reaper.ShowConsoleMsg(gfx.mouse_x)
-    --reaper.ShowConsoleMsg("\nwindow: "..win.."\nsegment: "..seg.."\ndetails: "..det)
-    reaper.ShowConsoleMsg("\n\nnoterow: "..ntrow.."\ncclane: "..cclane.."\ncclanevalue: "..cclaneval.."\ncclaneid: "..cclaneid)
-    reaper.ShowConsoleMsg("\n\nposition: "..position.."\n\n")
-
-      if dt > interval then
-      reaper.StuffMIDIMessage(0, 0x90 + chan, pitch, vel)
-      time1 = time2
-      end
-  end
-  ]]
+main() 
