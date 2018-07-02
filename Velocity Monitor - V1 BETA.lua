@@ -4,6 +4,7 @@
 .. Author: r3as0n.X
 .. Licence: GPL v3
 .. Reaper: 5.92
+.. SWS extensions v2.9.7
 .. Version: 1.0
 --]] 
 
