@@ -197,6 +197,9 @@ local function main()
   if char ~= 27 and char ~= -1 then
     reaper.defer(main)
   else
+    if cur_take ~= nil then
+      noteoff(cur_take, cur_note)
+    end
     gfx.quit()
   end
   
