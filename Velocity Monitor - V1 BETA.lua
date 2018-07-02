@@ -1,6 +1,6 @@
 --[[
 .. Reascript Name: Velocity Lane Monitor
-.. Description: Monitor note in specified intervals while adjusting velocity in the velocity lane of the MIDI editors.
+.. Description: Monitor notes in specified intervals while adjusting velocity in the velocity lane of the MIDI editors.
 .. Author: r3as0n.X
 .. Licence: GPL v3
 .. Reaper 5.92
