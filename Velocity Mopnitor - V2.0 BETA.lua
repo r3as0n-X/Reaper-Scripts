@@ -21,9 +21,6 @@ local function lim(value, lower, upper)
     return value
 end
 
-t1, t2, t3, t4 = 0
-
-
 -- Main window dimensions are set here
 window_w = 360
 window_h = 360
@@ -95,7 +92,6 @@ function Shape:new(r, g, b, o, button, x, y, w, h, string, str_size, str_r, str_
   
   return obj
 end
-
 
 -- Capture mouse events
 local function mouseevents(obj)
@@ -495,8 +491,6 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local function Main()
-    reaper.ClearConsole()
-    msg()
     
      -- Check for active takes and prepare track
     local take = reaper.MIDIEditor_GetTake(reaper.MIDIEditor_GetActive())
@@ -559,9 +553,8 @@ local function Main()
         end
         gfx.quit()
     end
-    
-        
-    gfx.update()
+
+  gfx.update()
 end
 
 gfx.init("Velocity Monitor V2.0 BETA", window_w, window_h, 0, 0, 0)
