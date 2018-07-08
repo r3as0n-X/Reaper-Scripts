@@ -21,8 +21,6 @@ local function lim(value, lower, upper)
     return value
 end
 
-t1, t2, t3, t4 = 0
-
 
 -- Main window dimensions are set here
 window_w = 360
@@ -495,8 +493,6 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local function Main()
-    reaper.ClearConsole()
-    msg()
     
      -- Check for active takes and prepare track
     local take = reaper.MIDIEditor_GetTake(reaper.MIDIEditor_GetActive())
