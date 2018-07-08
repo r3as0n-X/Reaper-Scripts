@@ -8,7 +8,6 @@
 .. Version: 2.0 BETA
 --]] 
 
-
 local function msg(text)
   reaper.ShowConsoleMsg(tostring(text).."\n")
 end
@@ -22,12 +21,16 @@ local function lim(value, lower, upper)
     return value
 end
 
+t1, t2, t3, t4 = 0
+
+
 -- Main window dimensions are set here
 window_w = 360
 window_h = 360
 
 -- Initialize drawing flag for draw_objects() function
 draw_flag = 1
+draw_page = 0   -- 0 for main page, 1 for about page
 
 -- Translate rgb matrices from 0-255 to 0-1
 local function rgbcalc(r, g, b, o)
@@ -48,8 +51,9 @@ Shape = {}
   Shape.color_nor = {-1, -1, -1, -1}      -- Normal color for filling
   Shape.color_alt = {-1, -1, -1, -1}      -- Alternate color for filling
   Shape.textcolor = {-1, -1, -1, -1}      -- Color for text
-  Shape.xywh_alt = {-1, -1, -1, -1}       -- Shape top left position x, y and width, height. If h is zero, then shape is circle
   Shape.textcolor_alt = {-1, -1, -1, -1}  -- Color for text
+  Shape.textcolor_nor = {-1, -1, -1, -1}  -- Color for text
+  Shape.xywh_alt = {-1, -1, -1, -1}       -- Shape top left position x, y and width, height. If h is zero, then shape is circle
   Shape.text = nil                        -- Text
   Shape.fontface = "Arial"                -- Font family
   Shape.fontsize = 28                     -- Specify default font size, 0 for default size
@@ -66,13 +70,14 @@ function Shape:new(r, g, b, o, button, x, y, w, h, string, str_size, str_r, str_
   
   obj.button = button
   obj.xywh = {x, y, w, h}
-  obj.color = {rgbcalc(r, g, b, o)}
-  obj.color_nor = {rgbcalc(r, g, b, o)}
+  obj.color = {r, g, b, o}
+  obj.color_nor = {r, g, b, o}
 
   
   if string ~= nil then
       obj.text = string
-      obj.textcolor = {rgbcalc(str_r, str_g, str_b, str_o)}
+      obj.textcolor = {str_r, str_g, str_b, str_o}
+      obj.textcolor_nor = {str_r, str_g, str_b, str_o}
       
       if str_size > 0 then
           obj.fontsize = lim(str_size, 8, 100)
@@ -111,13 +116,14 @@ local function mouseevents(obj)
   obj.char = c
 end
 
+
 -- Check whether mouse is over the shape
 function Shape:mouseaction()
 
   local x = gfx.mouse_x
   local y = gfx.mouse_y
   
-  if self.xywh[4] > 0 then  -- For rectangle
+  if self.xywh[4] > 0 then
       local shape_x = self.xywh[1] - self.xywh[3] / 2
       local shape_y = self.xywh[2] - self.xywh[4] / 2
       if x > shape_x and x < shape_x + self.xywh[3] and y > shape_y and y < shape_y + self.xywh[4] then
@@ -129,7 +135,7 @@ function Shape:mouseaction()
           self.mouseover = false
           return false
       end
-  elseif self.xywh[4] == 0 then  -- For circle
+  elseif self.xywh[4] == 0 then
       local dist = math.sqrt((self.xywh[1] - x)*(self.xywh[1] - x) + (self.xywh[2]-y)*(self.xywh[2]-y))                                 ------------Problem
       if dist < self.xywh[3] then
           self.mouseover = true
@@ -147,25 +153,25 @@ end
 -- Draw the shape
 function Shape:drawshape()
 
-    if self.color[4] == 0 then         -- Fill or no fill according to opacity specified and set color matrices
-        op = 1
+    if self.color[4] == -1 then         -- Fill or no fill according to opacity specified and set color matrices
+        op = 100
     else
         op = self.color[4]             
     end
-    gfx.set(self.color[1], self.color[2], self.color[3], op)
+    gfx.set(rgbcalc(self.color[1], self.color[2], self.color[3], op))
     gfx.setfont(1, self.fontface, self.fontsize)  
     
     -- Draw shapes
     if self.xywh[4] > 0 then           -- If shape is rectangle
         local x = self.xywh[1] - (self.xywh[3] / 2)
         local y = self.xywh[2] - (self.xywh[4] / 2)
-        if self.color[4] == 0 then 
+        if self.color[4] == -1 then 
         gfx.rect(x, y, self.xywh[3], self.xywh[4], 0)
         else
         gfx.rect(x, y, self.xywh[3], self.xywh[4], 1)
         end
     elseif self.xywh[4] == 0 then      --If shape is circle
-        if self.color[4] == 0 then
+        if self.color[4] == -1 then
         gfx.circle(self.xywh[1], self.xywh[2], self.xywh[3], 0)
         else 
         gfx.circle(self.xywh[1], self.xywh[2], self.xywh[3], 1)
@@ -174,7 +180,7 @@ function Shape:drawshape()
     
     -- Draw string
     if self.text ~= nil then
-        gfx.set(self.textcolor[1], self.textcolor[2], self.textcolor[3], self.textcolor[4])
+        gfx.set(rgbcalc(self.textcolor[1], self.textcolor[2], self.textcolor[3], self.textcolor[4]))
         local w, h = gfx.measurestr(self.text)
         gfx.x = self.xywh[1] - (w / 2)
         gfx.y = self.xywh[2] - (h / 2)
@@ -225,7 +231,19 @@ function Shape:place(x_ref, x, y_ref, y)
 end
 
 -- Initialize shapes
+----------------------------------------------------------------------------------Menu
+settings = Shape:new(0,0,0,100,false,0,0,0,22,"SETTINGS", 14,180,180,180,100)
+settings:place("left", 5, "top", 5)
+settings.textcolor_alt = {235, 235, 235, 100}
+settings.textcolor = settings.textcolor_alt
+about = Shape:new(0,0,0,100,false,0,0,0,22,"ABOUT", 14,180,180,180,100)
+about:place("left", (15 + settings.xywh[3]), "top", 5)
+about.textcolor_alt = {235, 235, 235, 100}
+quit = Shape:new(0,0,0,100,false,0,0,0,22,"QUIT", 14,180,180,180,100)
+quit:place("left", (25 + settings.xywh[3] + about.xywh[3]), "top", 5)
+quit.textcolor_alt = {235, 235, 235, 100}
 
+----------------------------------------------------------------------------------Page 0
 -- Interval setting region
 int_field = Shape:new(0, 0, 0, 100, false, 180, 180, 47, 0, "500", 47, 255,255,255,100)
 int_field:place("center", 0, "center", 0)
@@ -234,23 +252,23 @@ circle:place("center", 0, "center", 0)
 millisec = Shape:new(0,0,0,100,false,180,180,0,2,"Milliseconds", 24, 255,255,255,100)
 millisec:place("center", 0, "top", 100)
 -- LEDs
-noteon_led_ring = Shape:new(235,235,235,0, false, 0,0,6,0)
+noteon_led_ring = Shape:new(50,50,50,-1, false, 0,0,6,0)
 noteon_led_ring:place("right", -15, "top", 15)
-noteon_led = Shape:new(0,0,0,100, false, 0,0,5,0)
+noteon_led = Shape:new(100,0,0,100, false, 0,0,5,0)
 noteon_led.color_alt = {255,0,0,100}
 noteon_led.xywh[1] = noteon_led_ring.xywh[1]
 noteon_led.xywh[2] = noteon_led_ring.xywh[2]
 
-take_led_ring = Shape:new(235,235,235,0, false, 0,0,6,0)
+take_led_ring = Shape:new(50,50,50,-1, false, 0,0,6,0)
 take_led_ring:place("right", -15, "top", 35)
-take_led = Shape:new(0,0,0,100, false, 0,0,5,0)
-take_led.color_alt = {180,180,0,100}
+take_led = Shape:new(100,100,0,100, false, 0,0,5,0)
+take_led.color_alt = {255,255,0,100}
 take_led.xywh[1] = take_led_ring.xywh[1]
 take_led.xywh[2] = take_led_ring.xywh[2]
 
-note_led_ring = Shape:new(235,235,235,0, false, 0,0,6,0)
+note_led_ring = Shape:new(50,50,50,-1, false, 0,0,6,0)
 note_led_ring:place("right", -15, "top", 55)
-note_led = Shape:new(0,0,0,100, false, 0,0,5,0)
+note_led = Shape:new(0,100,0,100, false, 0,0,5,0)
 note_led.color_alt = {0, 255, 0, 100}
 note_led.xywh[1] = note_led_ring.xywh[1]
 note_led.xywh[2] = note_led_ring.xywh[2]
@@ -269,6 +287,43 @@ Beta:place("center", 0, "bottom", -12)
 RedCircle = Shape:new(255,0,0,0,false,0,0,180,0)
 RedCircle:place("center", 0, "bottom", 293)  
 
+--------------------------------------------------------------------------------Page 1
+abt1 = Shape:new(0,0,0,100, false, 0,0,0,2,"Velocity Monitor", 16, 235,235,235,100)
+abt1:place("center", 0, "top", 70)
+abt2 = Shape:new(0,0,0,100, false, 0,0,0,2,"Version : 2.0 BETA", 16, 235,235,235,100)
+abt2:place("center", 0, "top", 95)
+abt3 = Shape:new(0,0,0,100, false, 0,0,0,2,"Author : R3as0n_X", 16, 235,235,235,100)
+abt3:place("center", 0, "top", 120)
+abt4 = Shape:new(0,0,0,100, false, 0,0,0,2,"Bug reports/Suggestions :\n   reason.n@gmail.com", 16, 235,235,235,100)
+abt4:place("center", 0, "top", 145)
+abt5 = Shape:new(0,0,0,100, false, 0,0,0,2,"If this script is useful to you, \nconsider making a donation :", 17, 235,235,235,100)
+abt5:place("center", 0, "top", 200)
+Donation = Shape:new(180,180,0,100, false, 0,0,50,0,"Donate", 28, 0,0,0,100)
+Donation:place("center", 0, "top", 245)
+Donation.textcolor_alt = {0,0,255,100}
+
+local function open_url(url)
+  local OS = reaper.GetOS()
+  if OS == "OSX32" or OS == "OSX64" then
+    os.execute('open "" "' .. url .. '"')
+  else
+    os.execute('start "" "' .. url .. '"')
+  end
+end
+
+local function d_nation()
+    if Donation:mouseaction() then
+        Donation.textcolor = Donation.textcolor_alt
+        if Donation.M_click == 1 then
+            open_url("http://www.yorgospanagiotopoulos.com")
+            Donation.M_click = 0
+        end
+    else
+        Donation.textcolor = Donation.textcolor_nor
+    end
+    -- and Donation.M_click == 1 then
+end      
+
 local function noteon_blink_on()
     led_time = reaper.time_precise()
     noteon_led.color = noteon_led.color_alt
@@ -284,33 +339,73 @@ local function noteon_blink_off(dt)
       end
 end
 
-local function draw_objects()
-    if draw_flag == 1 then
-        -- Interval setting
-        circle:drawshape()
-        int_field:drawshape()
-        millisec:drawshape()
-        -- Leds
-        noteon_led_ring:drawshape()
-        noteon_led:drawshape()
-        take_led_ring:drawshape()
-        take_led:drawshape()
-        note_led_ring:drawshape()
-        note_led:drawshape()
-        -- Led text
-        txt_noteon:drawshape()
-        txt_take:drawshape()
-        txt_note:drawshape()
-        
-        VelMon:drawshape()
-        Beta:drawshape()
-        RedCircle:drawshape()
-        draw_flag = 0
-    end    
+local function check_menu()
+    if settings:mouseaction() and settings.M_click == 1 then
+        settings.textcolor = settings.textcolor_alt
+        about.textcolor = about.textcolor_nor
+        quit.textcolor = quit.textcolor_nor
+        draw_page = 0
+        draw_flag = 1
+    elseif about:mouseaction() and about.M_click == 1 then
+        settings.textcolor = settings.textcolor_nor
+        about.textcolor = about.textcolor_alt
+        quit.textcolor = quit.textcolor_nor
+        draw_page = 1
+        draw_flag = 1
+    elseif quit:mouseaction() and quit.M_click == 1 then
+        settings.textcolor = settings.textcolor_nor
+        about.textcolor = about.textcolor_nor
+        quit.textcolor = quit.textcolor_alt
+        draw_page = 2
+        draw_flag = 1
+    end
 end
 
-----------------------------------------------------------------------------------------MIDI IMPLEMENTATION------------------
------------------------------------------------------------------------------------------------------------------------------
+local function draw_menu()
+  settings:drawshape()
+  about:drawshape()
+  quit:drawshape()
+end
+
+local function draw_objects()
+if draw_flag == 1 then
+    draw_menu()
+    if draw_page == 0 then
+          
+          -- Interval setting
+          circle:drawshape()
+          int_field:drawshape()
+          millisec:drawshape()
+          -- Leds
+          noteon_led_ring:drawshape()
+          noteon_led:drawshape()
+          take_led_ring:drawshape()
+          take_led:drawshape()
+          note_led_ring:drawshape()
+          note_led:drawshape()
+          -- Led text
+          txt_noteon:drawshape()
+          txt_take:drawshape()
+          txt_note:drawshape()
+          
+          VelMon:drawshape()
+          Beta:drawshape()
+          RedCircle:drawshape()
+          draw_flag = 0
+    elseif draw_page == 1 then
+        abt1:drawshape()
+        abt2:drawshape()
+        abt3:drawshape()
+        abt4:drawshape()
+        abt5:drawshape()
+        Donation:drawshape()
+    end
+draw_flag = 0
+end    
+end
+
+--------------------------------------------------------------------------------------------------------------MIDI IMPLEMENTATION-----------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 -- Initialize global variables
@@ -395,11 +490,13 @@ end
 
 
 
---------------------------------------------------------------------------------------------MAIN FUNCTION-------------------
-----------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------MAIN FUNCTION-----------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local function Main()
+    reaper.ClearConsole()
+    msg()
     
      -- Check for active takes and prepare track
     local take = reaper.MIDIEditor_GetTake(reaper.MIDIEditor_GetActive())
@@ -443,6 +540,8 @@ local function Main()
      end
     noteon_blink_off(0.1)
     
+    check_menu()
+    d_nation()
     if circle:mouseaction() and circle.M_wheel ~= 0 then
         interval = lim((interval + 50*circle.M_wheel), 50, 9999)
         int_field.text = string.format("%d", interval)
@@ -452,7 +551,7 @@ local function Main()
     draw_objects()
 
     char = gfx.getchar()
-    if char ~= 27 or char == -1 then
+    if char ~= 27 and char ~= -1 and draw_page ~= 2 then
         reaper.defer(Main)
     else
         if cur_track ~= nil then
@@ -461,8 +560,8 @@ local function Main()
         gfx.quit()
     end
     
-        gfx.update()
-    
+        
+    gfx.update()
 end
 
 gfx.init("Velocity Monitor V2.0 BETA", window_w, window_h, 0, 0, 0)
