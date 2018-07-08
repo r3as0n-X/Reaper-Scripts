@@ -1,3 +1,14 @@
+--[[
+.. Reascript Name: Velocity Monitor
+.. Description: Monitor notes in specified intervals while adjusting velocity in the velocity lane of the MIDI editors.
+.. Author: r3as0n_X
+.. Licence: GPL v3
+.. Reaper 5.92
+.. SWS extensions v2.9.7
+.. Version: 2.0 BETA
+--]] 
+
+
 local function msg(text)
   reaper.ShowConsoleMsg(tostring(text).."\n")
 end
@@ -10,9 +21,6 @@ local function lim(value, lower, upper)
     end
     return value
 end
-
-t = 0
-s = nil
 
 -- Main window dimensions are set here
 window_w = 360
@@ -103,14 +111,13 @@ local function mouseevents(obj)
   obj.char = c
 end
 
-
 -- Check whether mouse is over the shape
 function Shape:mouseaction()
 
   local x = gfx.mouse_x
   local y = gfx.mouse_y
   
-  if self.xywh[4] > 0 then
+  if self.xywh[4] > 0 then  -- For rectangle
       local shape_x = self.xywh[1] - self.xywh[3] / 2
       local shape_y = self.xywh[2] - self.xywh[4] / 2
       if x > shape_x and x < shape_x + self.xywh[3] and y > shape_y and y < shape_y + self.xywh[4] then
@@ -122,7 +129,7 @@ function Shape:mouseaction()
           self.mouseover = false
           return false
       end
-  elseif self.xywh[4] == 0 then
+  elseif self.xywh[4] == 0 then  -- For circle
       local dist = math.sqrt((self.xywh[1] - x)*(self.xywh[1] - x) + (self.xywh[2]-y)*(self.xywh[2]-y))                                 ------------Problem
       if dist < self.xywh[3] then
           self.mouseover = true
@@ -261,7 +268,6 @@ Beta = Shape:new(0,0,0,100,false,0,0,0,2,"V2.0 - BETA", 15,200,200,200,100)
 Beta:place("center", 0, "bottom", -12)  
 RedCircle = Shape:new(255,0,0,0,false,0,0,180,0)
 RedCircle:place("center", 0, "bottom", 293)  
-
 
 local function noteon_blink_on()
     led_time = reaper.time_precise()
