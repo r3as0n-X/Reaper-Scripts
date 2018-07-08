@@ -452,7 +452,7 @@ local function Main()
     draw_objects()
 
     char = gfx.getchar()
-    if char ~= 27 then
+    if char ~= 27 or char == -1 then
         reaper.defer(Main)
     else
         if cur_track ~= nil then
