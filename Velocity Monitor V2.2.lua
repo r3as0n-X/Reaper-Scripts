@@ -787,7 +787,6 @@ end
 -----------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------MAIN FUNCTION---------------
 local function Main()
-reaper.ClearConsole()
     get_input()           -- Capture mouse
     refocus_tool()        -- Refocus tool if mouse touches the top of the screen
     update_coor()         -- Update and remember coordinates if tool is moved
@@ -805,9 +804,7 @@ reaper.ClearConsole()
 
     active_take:get()                               -- Get main object
     active_take:play(reaper.time_precise())         -- Play note
-    led_section_check()      
-    
-    msg(State)                       -- Set LEDs accordingly
+    led_section_check()                             -- Set LEDs accordingly
 
     if Action.c ~= 27 and Action.c ~= -1 then  
         draw_objects()                              -- Draw condition is inside the function
