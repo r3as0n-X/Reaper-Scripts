@@ -44,6 +44,7 @@ local function open_url(url)
 end
 -----------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------INITIALIZE GRAPHICS---------
+Version = "Velocity Monitor V2.2 BETA"
 
 -- Initialize main window dimensions and coordinates
 window = {}
@@ -70,11 +71,11 @@ interval = 500
 local function re_init(mode)
     if mode == 0 then
           gfx.quit()
-          gfx.init("Velocity Monitor V2.0 BETA", window.w, window.h, window.mode, window.x, window.y)
+          gfx.init(Version, window.w, window.h, window.mode, window.x, window.y)
     elseif mode == 1 then
         if window.mode ~= 1 then
           gfx.quit()
-          gfx.init("Velocity Monitor V2.0 BETA", window.w, window.h, window.mode, window.x, window.y)
+          gfx.init(Version, window.w, window.h, window.mode, window.x, window.y)
         end
     end        
 end
@@ -322,7 +323,7 @@ active_led.xywh[2] = active_led_ring.xywh[2]
 
 txt_noteon = Shape:new(0,0,0,100,false,0,0,0,2,"Note On", 16, 200,200,200,100)
 txt_noteon:place("right", -40, "top", 13)
-txt_inline = Shape:new(0,0,0,100,false,0,0,0,2,"Inline", 16, 80,80,80,100)
+txt_inline = Shape:new(0,0,0,100,false,0,0,0,2,"Inline", 16, 120,120,120,100)
 txt_inline.textcolor_alt = {200, 200, 0, 100}
 txt_inline:place("right", -108, "top", 33)
 txt_take = Shape:new(0,0,0,100,false,0,0,0,2,"Midi Editor", 16, 200,200,200,100)
@@ -332,12 +333,12 @@ txt_active:place("right", -40, "top", 53)
 -- Title
 VelMon = Shape:new(0,0,0,100,false,0,0,0,2,"Velocity Monitor", 17,200,200,200,100)
 VelMon:place("center", 0, "bottom", -30)  
-Beta = Shape:new(0,0,0,100,false,0,0,0,2,"V2.1 - BETA", 15,200,200,200,100)
+Beta = Shape:new(0,0,0,100,false,0,0,0,2,"V2.2 - BETA", 15,200,200,200,100)
 Beta:place("center", 0, "bottom", -12)  
 -- ABOUT page elements
 abt1 = Shape:new(0,0,0,100, false, 0,0,0,2,"Velocity Monitor", 16, 235,235,235,100)
 abt1:place("center", 0, "top", 70)
-abt2 = Shape:new(0,0,0,100, false, 0,0,0,2,"Version : 2.0 BETA", 16, 235,235,235,100)
+abt2 = Shape:new(0,0,0,100, false, 0,0,0,2,"Version : 2.2 BETA", 16, 235,235,235,100)
 abt2:place("center", 0, "top", 95)
 abt3 = Shape:new(0,0,0,100, false, 0,0,0,2,"Author : R3as0n_X", 16, 235,235,235,100)
 abt3:place("center", 0, "top", 120)
@@ -745,22 +746,26 @@ end
 local function led_section_check()
     if State == true then
         active_led.color = active_led.color_alt
-        F_draw = true
+        f_draw = true
     else    
         active_led.color = active_led.color_nor
-        F_draw = true
+        f_draw = true
     end
     
     if active_take.editor ~= nil then
         take_led.color = take_led.color_alt
+        f_draw = true
     else
         take_led.color = take_led.color_nor
+        f_draw = true
     end
     
     if active_take.editor == "inline" then
         txt_inline.textcolor = txt_inline.textcolor_alt
+        f_draw = true
     else
         txt_inline.textcolor = txt_inline.textcolor_nor
+        f_draw = true
     end
     
     if active_take.note.on then
@@ -769,8 +774,10 @@ local function led_section_check()
         if blink_speed(reaper.time_precise()) then
             noteon_led.color = noteon_led.color_nor
         end
+        f_draw = true
     else
         noteon_led.color = noteon_led.color_nor
+        f_draw = true
     end
 end
 
@@ -780,6 +787,7 @@ end
 -----------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------MAIN FUNCTION---------------
 local function Main()
+reaper.ClearConsole()
     get_input()           -- Capture mouse
     refocus_tool()        -- Refocus tool if mouse touches the top of the screen
     update_coor()         -- Update and remember coordinates if tool is moved
@@ -797,7 +805,9 @@ local function Main()
 
     active_take:get()                               -- Get main object
     active_take:play(reaper.time_precise())         -- Play note
-    led_section_check()                             -- Set LEDs accordingly
+    led_section_check()      
+    
+    msg(State)                       -- Set LEDs accordingly
 
     if Action.c ~= 27 and Action.c ~= -1 then  
         draw_objects()                              -- Draw condition is inside the function
@@ -815,6 +825,6 @@ local function Main()
 end
 
 -- Initialize main window, objects and call Main loop
-gfx.init("Velocity Monitor V2.0 BETA", window.w, window.h, window.mode, window.x, window.y)
+gfx.init(Version, window.w, window.h, window.mode, window.x, window.y)
 draw_objects()
 Main()
