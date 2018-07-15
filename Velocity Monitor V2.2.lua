@@ -503,7 +503,7 @@ local function donation_action(page)
     if draw_page == page and Donation:mouseaction() then
         Donation.textcolor = Donation.textcolor_alt
         if Action.m_click == 1 then
-            open_url("http://blackpineproductions.com/r3as0n_X/VelocityMonitor_V2.html")
+            open_url("http://www.blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_2.html")
         end
     else
         Donation.textcolor = Donation.textcolor_nor
