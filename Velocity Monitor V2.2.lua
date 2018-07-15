@@ -1,3 +1,14 @@
+--[[
+.. Reascript Name: Velocity Monitor
+.. Version: 2.2 BETA
+.. Description: Monitor notes in specified intervals while adjusting velocity in the velocity lane of the MIDI editors.
+.. Author: r3as0n.X
+.. Licence: GPL v3
+.. Reaper 5.92
+.. SWS extensions v2.9.7
+.. Webpage : http://www.blackpineproductions.com/r3as0n_X/VelocityMonitor_V2.html
+--]] 
+
 -------------------------------------------------------------------------GENERAL FUNCTIONS-----------
 
 local function msg(text)
