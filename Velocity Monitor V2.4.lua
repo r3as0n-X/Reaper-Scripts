@@ -94,7 +94,6 @@ local function top_of_screen_action()
     if Frame.y == 0 then
         if not window.hidden and window.mode == 0 then
             re_init()
-            f_draw = true
         elseif window.hidden then
             gfx.init(Version, window.w, window.h, window.mode, window.x, window.y)
             f_draw = true
