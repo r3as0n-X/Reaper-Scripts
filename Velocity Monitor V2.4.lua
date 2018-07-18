@@ -7,11 +7,10 @@
 .. Licence: GPL v3
 .. Reaper 5.92
 .. SWS extensions v2.9.7
-.. Webpage : http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_2.html
+.. Webpage : http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_4.html
 --]]
 
 -------------------------------------------------------------------------GENERAL FUNCTIONS-----------
-
 local function msg(text)
   reaper.ShowConsoleMsg(tostring(text).."\n")
 end
@@ -94,6 +93,7 @@ local function top_of_screen_action()
     if Frame.y == 0 then
         if not window.hidden and window.mode == 0 then
             re_init()
+            f_draw = true
         elseif window.hidden then
             gfx.init(Version, window.w, window.h, window.mode, window.x, window.y)
             f_draw = true
@@ -634,16 +634,10 @@ local function donation_action(page)
 
 end 
 
-local function help2_action(page)
-    if draw_page == page and help2:press() then
-        open_url("http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_2_help.html")
-    end
-end
-
 local function help3_action(page)
     if draw_page == page then
         if help3:press() then
-            open_url("http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_2_help.html")
+            open_url("http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_4_help.html")
         end
         
         if help3:mouseaction() then
@@ -657,7 +651,7 @@ end
 local function abt5_action(page)
     if draw_page == page then
         if abt5:press() then
-            open_url("http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_2.html")
+            open_url("http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_4.html")
         end
         
         if abt5:mouseaction() then
@@ -909,7 +903,6 @@ local function led_section_check()
     
     if active_take.note.on then
         noteon_led.color = noteon_led.color_alt
-        local time = reaper.time_precise()
         if blink_speed(reaper.time_precise()) then
             noteon_led.color = noteon_led.color_nor
         end
