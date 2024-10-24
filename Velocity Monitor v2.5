@@ -7,7 +7,7 @@
 .. Licence: GPL v3
 .. Reaper v7.25
 .. SWS extensions v2.14.0 #3 - September 14, 2024
-.. Webpage : http://blackpineproductions.com/r3as0n_X/VelocityMonitor/V2_4.html
+.. Webpage : https://arkadiansounds.com/Software/VelocityMonitor.html
 --]]
 
 -------------------------------------------------------------------------GENERAL FUNCTIONS-----------
@@ -44,7 +44,7 @@ local function open_url(url)
 end
 -----------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------INITIALIZE GRAPHICS---------
-Version = "Velocity Monitor V2.4 BETA"
+Version = "Velocity Monitor V2.5 BETA"
 
 -- Initialize main window mode, dimensions and coordinates
 window = {}
@@ -415,7 +415,7 @@ end
 -- Title
 VelMon = Shape:new(0,0,0,100,false,0,0,0,2,"Velocity Monitor", 17,200,200,200,100)
 VelMon:place("center", 0, "bottom", -30)  
-Beta = Shape:new(0,0,0,100,false,0,0,0,2,"V2.4 - BETA", 15,200,200,200,100)
+Beta = Shape:new(0,0,0,100,false,0,0,0,2,"V2.5 - BETA", 15,200,200,200,100)
 Beta:place("center", 0, "bottom", -12)  
 
 local function draw_title()
@@ -430,7 +430,7 @@ abt2 = Shape:new(0,0,0,100, false, 0,0,0,2,"Version : 2.5 BETA", 16, 180,180,180
 abt2:place("center", 0, "top", 65)
 abt3 = Shape:new(0,0,0,100, false, 0,0,0,2,"Author : R3as0n_X", 16, 180,180,180,100)
 abt3:place("center", 0, "top", 90)
-abt4 = Shape:new(0,0,0,100, false, 0,0,0,2,"Bug reports/Suggestions :\n   reason.n@gmail.com", 16, 180,180,180,100)
+abt4 = Shape:new(0,0,0,100, false, 0,0,0,2,"Bug reports/Suggestions :\n   velocitymonitor@arkadiansounds.com", 16, 180,180,180,100)
 abt4:place("center", 0, "top", 115)
 abt5 = Shape:new(0,0,0,100, false, 0,0,0,2,"Velocity Monitor Webpage", 16, 180,180,180,100)
 abt5:place("center", 0, "top", 155)
